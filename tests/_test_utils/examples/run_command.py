@@ -209,3 +209,21 @@ def run_llm_sparsity_export_command(
 
     cmd_parts = _extend_cmd_parts(["python", "export_trtllm_ckpt.py"], **kwargs)
     run_example_command(cmd_parts, "llm_sparsity")
+
+
+def run_llm_sparsity_build_command(
+    *, model: str, output_dir: str, **kwargs
+):
+    kwargs.update(
+        {
+            "checkpoint_dir": model,
+            "output_dir": output_dir,
+        }
+    )
+    kwargs.setdefault("max_batch_size", 16)
+    kwargs.setdefault("max_input_len", 1024)
+    kwargs.setdefault("max_seq_len", 1024)
+    kwargs.setdefault("max_num_tokens", 1024)
+
+    cmd_parts = _extend_cmd_parts(["trtllm-build", "--weight_sparsity"], **kwargs)
+    run_example_command(cmd_parts, "llm_sparsity")
