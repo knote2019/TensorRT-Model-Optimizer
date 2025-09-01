@@ -43,6 +43,9 @@ venv/
 !.vscode/settings.json
 !.vscode/extensions.json
 
+# Pycharm
+.idea
+
 # Mac stuff
 **/.DS_Store
 

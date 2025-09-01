@@ -170,3 +170,23 @@ def run_llm_sparsity_ft_command(
 
     cmd_parts = _extend_cmd_parts(["bash", "launch_finetune.sh"], **kwargs)
     run_example_command(cmd_parts, "llm_sparsity")
+
+
+def run_llm_sparsity_eval_command(
+    *, model: str, restore_path: str, data_path: str, gpu_count: int, **kwargs
+):
+    kwargs.update(
+        {
+            "model_dir": model,
+            "modelopt_restore_path": restore_path,
+            "data_path": data_path,
+        }
+    )
+    kwargs.setdefault("model_max_length", 1024)
+    kwargs.setdefault("batch_size", 1)
+    kwargs.setdefault("beam_size", 4)
+
+    cmd = f"accelerate launch --multi_gpu --num_processes={gpu_count}"
+
+    cmd_parts = _extend_cmd_parts([cmd, "eval.py"], **kwargs)
+    run_example_command(cmd_parts, "llm_sparsity")
