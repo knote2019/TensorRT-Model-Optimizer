@@ -19,6 +19,7 @@ from _test_utils.examples.run_command import (
     run_example_command,
     run_llm_sparsity_command,
     run_llm_sparsity_ft_command,
+    run_llm_sparsity_eval_command,
 )
 from _test_utils.torch_misc import minimum_gpu
 
@@ -54,7 +55,7 @@ def test_llama_sparsity(tiny_llama_path, tmp_path, sparsity_fmt, dtype):
     )
 
 
-def _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype):
+def _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype, num_gpus):
     pts_output = tmp_path / "pts_output"
     finetune_output = tmp_path / "finetune_output"
 
@@ -79,6 +80,14 @@ def _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity
         max_length=128,
     )
 
+    # Then do eval using the sparsified model.
+    run_llm_sparsity_eval_command(
+        model=tiny_llama_path,
+        restore_path=restore_path,
+        data_path=f"{data_path}/cnn_eval.json",
+        num_gpus=num_gpus,
+    )
+
 
 @pytest.mark.parametrize(
     ("sparsity_fmt", "dtype"),
@@ -86,8 +95,8 @@ def _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity
         ("sparsegpt", "bf16"),
     ],
 )
-def test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype):
-    _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype)
+def test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype, num_gpus):
+    _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype, num_gpus)
 
 
 @pytest.mark.parametrize(
