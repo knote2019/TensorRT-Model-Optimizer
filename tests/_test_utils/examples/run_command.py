@@ -190,3 +190,22 @@ def run_llm_sparsity_eval_command(
 
     cmd_parts = _extend_cmd_parts([cmd, "eval.py"], **kwargs)
     run_example_command(cmd_parts, "llm_sparsity")
+
+
+def run_llm_sparsity_export_command(
+    *, model: str, restore_path: str, output_dir: str, tp: int, pp: int, **kwargs
+):
+    kwargs.update(
+        {
+            "model_name_or_path": model,
+            "modelopt_restore_path": restore_path,
+            "output_dir": output_dir,
+        }
+    )
+    kwargs.setdefault("model_max_length", 1024)
+    kwargs.setdefault("dtype", "fp16")
+    kwargs.setdefault("inference_tensor_parallel", tp)
+    kwargs.setdefault("inference_pipeline_parallel", pp)
+
+    cmd_parts = _extend_cmd_parts(["python", "export_trtllm_ckpt.py"], **kwargs)
+    run_example_command(cmd_parts, "llm_sparsity")
