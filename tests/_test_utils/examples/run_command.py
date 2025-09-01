@@ -173,7 +173,7 @@ def run_llm_sparsity_ft_command(
 
 
 def run_llm_sparsity_eval_command(
-    *, model: str, restore_path: str, data_path: str, gpu_count: int, **kwargs
+    *, model: str, restore_path: str, data_path: str, **kwargs
 ):
     kwargs.update(
         {
@@ -186,6 +186,7 @@ def run_llm_sparsity_eval_command(
     kwargs.setdefault("batch_size", 1)
     kwargs.setdefault("beam_size", 4)
 
+    gpu_count = torch.cuda.device_count()
     cmd = f"accelerate launch --multi_gpu --num_processes={gpu_count}"
 
     cmd_parts = _extend_cmd_parts([cmd, "eval.py"], **kwargs)

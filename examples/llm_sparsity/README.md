@@ -107,13 +107,11 @@ The saved checkpoint, e.g. `finetuned_modelopt_state.pth`, can be loaded using `
 The following command demonstrates how to evaluate the finetuned model on the `cnn_dailymail` dataset.
 
 ```sh
-accelerate launch --multi_gpu --num_processes=8 eval.py \
-    --model_dir meta-llama/Llama-2-7b-hf \
+bash launch_eval.sh --num_proc 8 \
+    --model meta-llama/Llama-2-7b-hf \
+    --restore_path saved_models_Llama-2-7b-hf_sparsegpt_tp1_pp1/pts/pts_modelopt_state.pth \
     --data_path data/cnn_eval.json \
-    --batch_size 1 \
-    --beam_size 4 \
-    --model_max_length 1024 \
-    --modelopt_restore_path saved_models_Llama-2-7b-hf_sparsegpt_tp1_pp1/finetuned/finetuned_modelopt_state.pth
+    --max_length 1024
 ```
 
 The output should be similar to the following:
