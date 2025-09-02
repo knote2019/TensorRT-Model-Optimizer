@@ -14,12 +14,15 @@
 # limitations under the License.
 
 
+import json
 import pytest
 from _test_utils.examples.run_command import (
     run_example_command,
     run_llm_sparsity_command,
     run_llm_sparsity_ft_command,
     run_llm_sparsity_eval_command,
+    run_llm_sparsity_export_command,
+    run_llm_sparsity_test_command,
 )
 from _test_utils.torch_misc import minimum_gpu
 
@@ -31,8 +34,13 @@ def data_path(tmp_path_factory):
 
     # Copy eval data to train path for faster test
     run_example_command(
-        ["cp", data_path / "cnn_eval.json", data_path / "cnn_train.json"], "llm_sparsity"
+        ["mv", data_path / "cnn_eval.json", data_path / "cnn_eval_default.json"], "llm_sparsity"
     )
+
+    with open(data_path / "cnn_eval_default.json") as f1:
+        data = json.load(f1)
+        with open(data_path / "cnn_eval.json", 'w') as f2:
+            json.dump(data[:50], f2, indent=4, ensure_ascii=False)
 
     return data_path
 
@@ -58,6 +66,8 @@ def test_llama_sparsity(tiny_llama_path, tmp_path, sparsity_fmt, dtype):
 def _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity_fmt, dtype, num_gpus):
     pts_output = tmp_path / "pts_output"
     finetune_output = tmp_path / "finetune_output"
+    finetune_ckpt_output = tmp_path / "finetune_ckpt_output"
+    finetune_engine_output = tmp_path / "finetune_engine_output"
 
     # First do sparsification
     run_llm_sparsity_command(
@@ -86,6 +96,22 @@ def _test_llama_sparsity_finetune(tiny_llama_path, tmp_path, data_path, sparsity
         restore_path=restore_path,
         data_path=f"{data_path}/cnn_eval.json",
         num_gpus=num_gpus,
+    )
+
+    # Then do export using the sparsified model.
+    run_llm_sparsity_export_command(
+        model=tiny_llama_path,
+        restore_path=restore_path,
+        output_dir=finetune_ckpt_output,
+        tensor_parallel=num_gpus,
+    )
+
+    # Then do test using the sparsified model.
+    run_llm_sparsity_test_command(
+        model=tiny_llama_path,
+        ckpt_dir=finetune_ckpt_output,
+        output_dir=finetune_engine_output,
+        tensor_parallel=num_gpus,
     )
 
 

@@ -190,7 +190,7 @@ def run_llm_sparsity_eval_command(
 
 
 def run_llm_sparsity_export_command(
-    *, model: str, restore_path: str, output_dir: str, tp: int, pp: int, **kwargs
+    *, model: str, restore_path: str, output_dir: str, tensor_parallel: int, **kwargs
 ):
     kwargs.update(
         {
@@ -201,26 +201,27 @@ def run_llm_sparsity_export_command(
     )
     kwargs.setdefault("model_max_length", 1024)
     kwargs.setdefault("dtype", "fp16")
-    kwargs.setdefault("inference_tensor_parallel", tp)
-    kwargs.setdefault("inference_pipeline_parallel", pp)
+    kwargs.setdefault("inference_tensor_parallel", tensor_parallel)
 
     cmd_parts = _extend_cmd_parts(["python", "export_trtllm_ckpt.py"], **kwargs)
     run_example_command(cmd_parts, "llm_sparsity")
 
 
-def run_llm_sparsity_build_command(
-    *, model: str, output_dir: str, **kwargs
+def run_llm_sparsity_test_command(
+    *, model: str, ckpt_dir: str, tensor_parallel: int, output_dir: str, **kwargs
 ):
     kwargs.update(
         {
-            "checkpoint_dir": model,
-            "output_dir": output_dir,
+            "tokenizer": model,
+            "model_config": f"{ckpt_dir}/config.json",
+            "engine_dir": output_dir,
+            "num_build_workers": tensor_parallel,
         }
     )
-    kwargs.setdefault("max_batch_size", 16)
+    kwargs.setdefault("enable_sparsity", True)
     kwargs.setdefault("max_input_len", 1024)
-    kwargs.setdefault("max_seq_len", 1024)
-    kwargs.setdefault("max_num_tokens", 1024)
+    kwargs.setdefault("max_output_len", 512)
+    kwargs.setdefault("max_batch_size", 4)
 
-    cmd_parts = _extend_cmd_parts(["trtllm-build", "--weight_sparsity"], **kwargs)
-    run_example_command(cmd_parts, "llm_sparsity")
+    cmd_parts = _extend_cmd_parts(["python", "modelopt_to_tensorrt_llm.py"], **kwargs)
+    run_example_command(cmd_parts, "llm_ptq")
